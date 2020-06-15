@@ -259,7 +259,6 @@ def initial_connection():
     #waarde=FSR()
     #datum_correct=datum.strftime("%Y-%m-%d %H:%M:%S")
     #print(waarde)
-    
     socketio.emit('B2F_status_update',{'sensorId':Grafiek1,'sensorId2':Grafiek2, 'sensorId3':Grafiek3})
 
 @socketio.on('F2B_passoa')
