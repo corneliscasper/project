@@ -1,0 +1,1 @@
+Sinds de crash van mijn SD kaart sukkelde ik een tijdje met het pushen van mijn code op de oude github repository, daarom heb ik met Frederik Waeyaert een local force push gedaan en is alles overschreven. Commando= git push -f origin master 
