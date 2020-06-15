@@ -10,6 +10,9 @@ spi = spidev.SpiDev()
 import time
 import threading
 import datetime
+import lcddriver
+lcd = lcddriver.lcd()
+lcd.lcd_clear()
 from RPi import GPIO
 
 #US
@@ -79,6 +82,7 @@ temp = "0"
 # GPIO.output(26,0)
 # time.sleep(2)
 
+lcd.lcd_clear()
 
 
 #DataRepository.create_new_row()
@@ -102,6 +106,7 @@ def motor(FRUITSAP,ALCOHOL):
     
 
 def motor_reinigen(FRUITSAP,PASSOA,PISANG,SAFARI):
+    lcd.lcd_display_string('Reiniging bezig')
     GPIO.output(FRUITSAP,1)
     time.sleep(15)
     GPIO.output(FRUITSAP,0)
@@ -121,9 +126,13 @@ def motor_reinigen(FRUITSAP,PASSOA,PISANG,SAFARI):
     time.sleep(1)
 
     GPIO.output(SAFARI,1)
-    time.sleep(1)
+    time.sleep(15)
     GPIO.output(SAFARI,0)
 
+    time.sleep(1)
+    lcd.lcd_display_string('Reiniging Klaar')
+    time.sleep(5)
+    lcd.lcd_clear()
 def temperatuur_functie():
     sensorids = "28-0217b00ad1ff"
     tfile = open("/sys/bus/w1/devices/"+ sensorids +"/w1_slave") #RPi 2,3 met nieuwe kernel.
@@ -257,6 +266,8 @@ def initial_connection():
 def produceer_cocktail():
     datum=datetime.datetime.now()
     datum_correct=datum.strftime("%Y-%m-%d %H:%M:%S")
+    lcd.lcd_clear()
+    lcd.lcd_display_string("Passoa wordt gemaakt", 1)
     DataRepository.create_new_row(datum_correct,None,1,4,None)
     DataRepository.create_new_row(datum_correct,None,1,1,None)
     # waarde_US=functionUS()
@@ -271,12 +282,19 @@ def produceer_cocktail():
     #     GPIO.output(buzzer,0)
     DataRepository.create_new_row(datum_correct,None,0,4,None)
     DataRepository.create_new_row(datum_correct,None,0,1,None)
+    lcd.lcd_clear()
+    lcd.lcd_display_string("Passoa is klaar", 1)
+    time.sleep(5)
+    lcd.lcd_clear()
+
 @socketio.on('F2B_pisang')
 def produceer_cocktail():
     datum=datetime.datetime.now()
     datum_correct=datum.strftime("%Y-%m-%d %H:%M:%S")
     DataRepository.create_new_row(datum_correct,None,1,3,None)
     DataRepository.create_new_row(datum_correct,None,1,1,None)
+    lcd.lcd_clear()
+    lcd.lcd_display_string("Pisang wordt gemaakt", 1)
     # waarde_US=functionUS()
     # waarde=FSR()
     # if waarde_US<8 and waarde<12:
@@ -285,6 +303,10 @@ def produceer_cocktail():
     #     GPIO.output(buzzer,2)
     #     time.sleep(1)
     #     GPIO.output(buzzer,0)
+    lcd.lcd_clear()
+    lcd.lcd_display_string("Pisang is klaar", 1)
+    time.sleep(5)
+    lcd.lcd_clear()
     DataRepository.create_new_row(datum_correct,None,0,3,None)
     DataRepository.create_new_row(datum_correct,None,0,1,None)
 
@@ -292,8 +314,11 @@ def produceer_cocktail():
 def produceer_cocktail():
     datum=datetime.datetime.now()
     datum_correct=datum.strftime("%Y-%m-%d %H:%M:%S")
+    lcd.lcd_clear()
+    lcd.lcd_display_string("Safari wordt gemaakt", 1)
     DataRepository.create_new_row(datum_correct,None,1,2,None)
     DataRepository.create_new_row(datum_correct,None,1,1,None)
+
     # waarde_us=functionUS()
     # waarde=FSR()
     # if waarde_US<8 and waarde<12:
@@ -302,11 +327,15 @@ def produceer_cocktail():
     #     GPIO.output(buzzer,2)
     #     time.sleep(1)
     #     GPIO.output(buzzer,0)
+    lcd.lcd_clear()
+    lcd.lcd_display_string("Safari is klaar", 1)
+    time.sleep(5)
+    lcd.lcd_clear()
     DataRepository.create_new_row(datum_correct,None,0,2,None)
     DataRepository.create_new_row(datum_correct,None,0,1,None)
 
-#@socketio.on('F2B_spoeling')
-#def reiniging():
+@socketio.on('F2B_spoeling')
+def reiniging():
     time.sleep(5)
     motor_reinigen(21,16,20,25)
 
