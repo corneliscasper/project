@@ -17,13 +17,7 @@ const listenToUI = function(){
   const btn_reiniging=document.querySelector('.btn_spoeling')
   const btn_pssoa= document.querySelector('.Passoa')
   
-  if(btn_pssoa){
-    btn_pssoa.addEventListener('click',function(){
 
-    }
-    
-    )
-  }
 
   if(btn_reiniging){
     btn_reiniging.addEventListener('click',function(){

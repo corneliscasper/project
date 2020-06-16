@@ -17,9 +17,9 @@
 }
 
 @font-face{
-    font-family: "QuickKissPersonalUse-PxlZ";
+    font-family: "VeganStyle";
     font-weight: 200;
-    src: url("/project/style/QuickKissPersonalUse-PxlZ.ttf") format("ttf");
+    src: url("/project/style/VEGANSTYLEPERSONALUSE-5Y58.TTF") format("ttf");
 }
 @font-face{
     font-family: "QuickKissPersonalUse-PxlZ";
@@ -226,10 +226,14 @@ p{
 }
 .o-header{
     margin-top: 16px;
+    margin-left: 16px;
 }
 
 .o-p{
     font-style: italic;
+}
+.o-font{
+    font-family: 'Segoe Print', Tahoma, Geneva, Verdana, sans-serif;
 }
 .o-button{
     display: inline-block;
@@ -243,10 +247,11 @@ p{
     background: orange;
     border: none
 }
+
 .font-header{
     font-size: 16px;
     line-height: 1.5;
-    font-family: "QuickKissPersonalUse-PxlZ", Helvetica, arial, sans-serif;
+    font-family: "Roboto", Helvetica, arial, sans-serif;
     color:white;
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
