@@ -51,25 +51,25 @@ CORS(app)
 status= "0"
 temp = "0"
 
-# GPIO.output(led1,1)
+# GPIO.output(buzzer,1)
 # time.sleep(2)
-# GPIO.output(led1,0)
+# GPIO.output(buzzer,0)
 # print('start')
 # GPIO.output(19,1)
-# time.sleep(13) #ALCOHOL TIJD
+# time.sleep(3) #ALCOHOL TIJD
 # GPIO.output(19,0)
-# time.sleep(2)
+# time.sleep(3)
 # GPIO.output(21,1)
-# time.sleep(10)  #FRUITSAP TIJD
+# time.sleep(3)  #FRUITSAP TIJD
 # GPIO.output(21,0)
-# time.sleep(2)
-# GPIO.output(19,1)
-# time.sleep(13) #ALCOHOL TIJD
-# GPIO.output(19,0)
-# time.sleep(2)
-# GPIO.output(21,1)
-# time.sleep(10)  #FRUITSAP TIJD
-# GPIO.output(21,0)
+# time.sleep(3)
+# GPIO.output(26,1)
+# time.sleep(3) #ALCOHOL TIJD
+# GPIO.output(26,0)
+# time.sleep(3)
+# GPIO.output(13,1)
+# time.sleep(3)  #FRUITSAP TIJD
+# GPIO.output(13,0)
 
 
 # time.sleep(2)
@@ -81,9 +81,6 @@ temp = "0"
 # time.sleep(5)
 # GPIO.output(26,0)
 # time.sleep(2)
-
-lcd.lcd_clear()
-
 
 #DataRepository.create_new_row()
 def motor(FRUITSAP,ALCOHOL):
@@ -106,7 +103,7 @@ def motor(FRUITSAP,ALCOHOL):
     
 
 def motor_reinigen(FRUITSAP,PASSOA,PISANG,SAFARI):
-    lcd.lcd_display_string('Reiniging bezig')
+    lcd.lcd_display_string('Reiniging bezig',1)
     GPIO.output(FRUITSAP,1)
     time.sleep(15)
     GPIO.output(FRUITSAP,0)
@@ -130,9 +127,11 @@ def motor_reinigen(FRUITSAP,PASSOA,PISANG,SAFARI):
     GPIO.output(SAFARI,0)
 
     time.sleep(1)
-    lcd.lcd_display_string('Reiniging Klaar')
+    lcd.lcd_display_string('Reiniging Klaar',1)
     time.sleep(5)
     lcd.lcd_clear()
+
+
 def temperatuur_functie():
     sensorids = "28-0217b00ad1ff"
     tfile = open("/sys/bus/w1/devices/"+ sensorids +"/w1_slave") #RPi 2,3 met nieuwe kernel.
@@ -151,7 +150,7 @@ def temperatuur_functie():
 
     return temp
 
-def FSR():
+def FSR(channel):
     class MCP:
         @staticmethod
         def init():
@@ -165,7 +164,7 @@ def FSR():
  
 
     MCP.init()
-    i=1
+    i=channel
     
     
     channel_pot = MCP.read_channel(i) #waarde van CH0 lezen en opslaan in channel_pot
@@ -184,8 +183,6 @@ def FSR():
         waarde = 11
     
     return waarde
-waarde=FSR()
-print(waarde)
 def functionUS():
     GPIO.output(TRIG, False)
     time.sleep(2)
@@ -214,18 +211,24 @@ def refresh():
 
         temperatuur=temperatuur_functie()#Sensor 1
         glas_detectie=functionUS()#Sensor 2
-        waarde_fsr=FSR()#Sensor 3
+        waarde_fsr0=FSR(0)#Fruitsap1
+        waarde_fsr1=FSR(1)#Fruitsap2
+        waarde_fsr2=FSR(2)#PASSOA
+        waarde_fsr3=FSR(3)#PASSOA
+        waarde_fsr4=FSR(4)#SAFARI
         #print(temperatuur)
         #print(afstand)
         datum=datetime.datetime.now()
         datum_correct=datum.strftime("%Y-%m-%d %H:%M:%S")
-        print(datum_correct)
-        DataRepository.create_new_row(datum_correct,waarde_fsr,1,None,3)
+        #print(datum_correct)
         DataRepository.create_new_row(datum_correct,temperatuur,1,None,2)
         DataRepository.create_new_row(datum_correct,glas_detectie,1,None,1)
-        
-        print(f"Waarde gewichtsensor ={waarde_fsr}")
-        socketio.emit('B2F_status_update',{'FSR':waarde_fsr,'TS':temperatuur,'US':glas_detectie})    
+        DataRepository.create_new_row(datum_correct,waarde_fsr0,1,None,3)
+        DataRepository.create_new_row(datum_correct,waarde_fsr1,1,None,4)
+        DataRepository.create_new_row(datum_correct,waarde_fsr2,1,None,6)
+        DataRepository.create_new_row(datum_correct,waarde_fsr3,1,None,5)
+        DataRepository.create_new_row(datum_correct,waarde_fsr4,1,None,7)
+        lcd.lcd_display_string(f'Temp:{temperatuur} graden',2) 
         time.sleep(60)  
 
 threading.Timer(5, refresh).start()
@@ -247,9 +250,9 @@ def hallo():
 
 @socketio.on('connect')
 def initial_connection():
-    Grafiek1=DataRepository.read_id_actuator(1)
-    Grafiek2=DataRepository.read_id_actuator(2)
-    Grafiek3=DataRepository.read_id_actuator(3)
+    Grafiek1=DataRepository.read_id_actuator(2)
+    Grafiek2=DataRepository.read_id_actuator(3)
+    Grafiek3=DataRepository.read_id_actuator(4)
     print('A new client connect')
     # # Send to the client!
     # vraag de status op van de lampen uit de DB
@@ -259,32 +262,41 @@ def initial_connection():
     #waarde=FSR()
     #datum_correct=datum.strftime("%Y-%m-%d %H:%M:%S")
     #print(waarde)
-    socketio.emit('B2F_status_update',{'sensorId':Grafiek1,'sensorId2':Grafiek2, 'sensorId3':Grafiek3})
+    socketio.emit('B2F_status_update',{'Safari':Grafiek1,'Pisang':Grafiek2, 'Passoa':Grafiek3})
 
 @socketio.on('F2B_passoa')
 def produceer_cocktail():
     datum=datetime.datetime.now()
     datum_correct=datum.strftime("%Y-%m-%d %H:%M:%S")
-    lcd.lcd_clear()
-    lcd.lcd_display_string("Passoa wordt gemaakt", 1)
+    time.sleep(1)
     DataRepository.create_new_row(datum_correct,None,1,4,None)
     DataRepository.create_new_row(datum_correct,None,1,1,None)
-    # waarde_US=functionUS()
-    # waarde= FSR()
-    # #print(waarde)
-    # #print(waarde_US)
+    lcd.lcd_clear()
+    
+    waarde_US=functionUS()
+    waarde=FSR(3)
+    waarde_fruitsap1=FSR(1)
+    waarde_fruitsap2=FSR(0)
+    #print(waarde)
+    #print(waarde_US)
     # if waarde_US<8 and waarde<12:
+    #     lcd.lcd_display_string('Passoa wordt gemaakt',1)
     #     motor(21,26)#FRUITSAP + PASSOA
+    #     lcd.lcd_clear()
+    #     lcd.lcd_display_string('Passoa is klaar',1)
+    #     time.sleep(5)
+    #     lcd.lcd_clear()
     # else:
     #     GPIO.output(buzzer,2)
-    #     time.sleep(1)
+    #     time.sleep(3)
     #     GPIO.output(buzzer,0)
+    #     lcd.lcd_display_string('Glas ontbreekt',1)
+    #     time.sleep(5)
+    # lcd.lcd_clear()
+
     DataRepository.create_new_row(datum_correct,None,0,4,None)
     DataRepository.create_new_row(datum_correct,None,0,1,None)
-    lcd.lcd_clear()
-    lcd.lcd_display_string("Passoa is klaar", 1)
-    time.sleep(5)
-    lcd.lcd_clear()
+
 
 @socketio.on('F2B_pisang')
 def produceer_cocktail():
@@ -293,9 +305,11 @@ def produceer_cocktail():
     DataRepository.create_new_row(datum_correct,None,1,3,None)
     DataRepository.create_new_row(datum_correct,None,1,1,None)
     lcd.lcd_clear()
-    lcd.lcd_display_string("Pisang wordt gemaakt", 1)
+    lcd.lcd_display_string('Pisang wordt gemaakt',1)
     # waarde_US=functionUS()
-    # waarde=FSR()
+    waarde=FSR(2)
+    waarde_fruitsap1=FSR(1)
+    waarde_fruitsap2=FSR(0)
     # if waarde_US<8 and waarde<12:
     #     motor(21,13)#FRUITSAP + PISANG
     # else:
@@ -303,7 +317,7 @@ def produceer_cocktail():
     #     time.sleep(1)
     #     GPIO.output(buzzer,0)
     lcd.lcd_clear()
-    lcd.lcd_display_string("Pisang is klaar", 1)
+    lcd.lcd_display_string('Pisang is klaar',1)
     time.sleep(5)
     lcd.lcd_clear()
     DataRepository.create_new_row(datum_correct,None,0,3,None)
@@ -313,13 +327,15 @@ def produceer_cocktail():
 def produceer_cocktail():
     datum=datetime.datetime.now()
     datum_correct=datum.strftime("%Y-%m-%d %H:%M:%S")
-    lcd.lcd_clear()
-    lcd.lcd_display_string("Safari wordt gemaakt", 1)
     DataRepository.create_new_row(datum_correct,None,1,2,None)
     DataRepository.create_new_row(datum_correct,None,1,1,None)
+    lcd.lcd_clear()
+    lcd.lcd_display_string('Safari wordt gemaakt',1)
 
     # waarde_us=functionUS()
-    # waarde=FSR()
+    waarde=FSR(4)
+    waarde_fruitsap1=FSR(1)
+    waarde_fruitsap2=FSR(0)
     # if waarde_US<8 and waarde<12:
     #     motor(21,19)#FRUITSAP + SAFARI
     # else:
@@ -327,7 +343,7 @@ def produceer_cocktail():
     #     time.sleep(1)
     #     GPIO.output(buzzer,0)
     lcd.lcd_clear()
-    lcd.lcd_display_string("Safari is klaar", 1)
+    lcd.lcd_display_string('Safari is klaar',1)
     time.sleep(5)
     lcd.lcd_clear()
     DataRepository.create_new_row(datum_correct,None,0,2,None)
